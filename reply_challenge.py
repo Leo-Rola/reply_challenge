@@ -7,10 +7,10 @@ import pandas as pd
 N = 100
 POPULATION_SIZE = N         
 OFFSPRING_SIZE = N*2        
-NUM_GENERATIONS = N*10
-ARTIFICIAL_MUTATIONS= 35000 #15000#25000 -> 1 min
+NUM_GENERATIONS = 2#N*10
+ARTIFICIAL_MUTATIONS= 35000 
 MAX_STEADY=10
-MAX_EXTINCTIONS=10   
+MAX_EXTINCTIONS=1#10   
 Individual = namedtuple("Individual", ["genome", "fitness"])
 TOURNAMENT_SIZE =int(N/4)
 GENETIC_OPERATOR_RANDOMNESS = 0.3
@@ -106,7 +106,9 @@ def init_population():
         for i in range(N_DEMONS):
             genome.append(i)
         random.shuffle(genome)
+        genome=genome[:N_TURNS]
         population.append(Individual(genome, compute_fitness(genome)))
+        
 
     return population
 
@@ -122,12 +124,16 @@ def mutation(genome):
     if n_mutations==0:
         n_mutations=1
     for i in range( n_mutations):"""
-    pos_1 = random.randint(0,N_DEMONS-1)
-    val_1 = new_genome[pos_1]
+    pos_1 = random.randint(0,N_TURNS-1)
     val_2= random.randint(0,N_DEMONS-1)
-    pos_2=new_genome.index(val_2)
-    new_genome[pos_1] = val_2
-    new_genome[pos_2] = val_1
+    try:
+        pos_2=new_genome.index(val_2)
+        val_1 = new_genome[pos_1]
+        new_genome[pos_1] = val_2
+        new_genome[pos_2] = val_1
+    except ValueError:
+        new_genome[pos_1] = val_2
+
     return new_genome
 
 """crossover"""
@@ -139,17 +145,17 @@ def cross_over(genome_1, genome_2):
     global CROSSOVER_THRESHOLD
     new_genome = []
     set_tot_val = {i for i in range(N_DEMONS)}
-    for i in range(0, N_DEMONS):
+    for i in range(0, N_TURNS):
         if (random.random() > CROSSOVER_THRESHOLD):
             new_genome.append(genome_1[i])
         else:
             new_genome.append(genome_2[i])
 
     new_genome_plus=list(OrderedDict.fromkeys(new_genome))
-    residual = set_tot_val - set(new_genome_plus)
-
-    for ele in residual:
-        new_genome_plus.append(ele)
+    residual = list(set_tot_val - set(new_genome_plus))
+    cut=N_TURNS-len(new_genome_plus)
+    residual=residual[:cut]
+    new_genome_plus=new_genome_plus+residual
 
     return new_genome_plus
 
@@ -217,7 +223,8 @@ def evolution(population):
                 else:
                     final_population.append(population[i]) #30% old population
             population=final_population
-    check_extinctions-=1       
+    if generation<NUM_GENERATIONS:
+        check_extinctions-=1       
     print("TOT GENERATIONS: ", generation, "/", NUM_GENERATIONS)
     print("TOT EXTINCTIONS: " , check_extinctions , "/" , MAX_EXTINCTIONS)
 
@@ -247,14 +254,29 @@ def artificial_evolution():
             found=False 
     print("ARTIFICIAL GENERATIONS: ", gen, "+", gen_a)
 
+def complete_output():
+    global list_of_lists
+    global best_individual
+    global N_TURNS
+    global N_DEMONS
+    if N_TURNS<N_DEMONS:
+        demons=[]
+        for i in range(N_DEMONS):
+            demons.append(i)
+        remaining_demons=list(set(demons)-set(best_individual[0]))
+        best_genome=best_individual[0]+remaining_demons
+        best_individual=Individual(best_genome, best_individual[1])
+
+
 if __name__ == '__main__':
-    take_data("01-the-cloud-abyss.txt")
+    take_data("05-androids-armageddon.txt")#01-the-cloud-abyss.txt
     #print(list_of_lists)
     population=init_population()
     evolution(population)
     print("EVOLUTION SCORE: " , best_individual[1])
-    artificial_evolution()
+    #artificial_evolution()
     #print(best_individual[0])
+    complete_output()
     print("FINAL SCORE: " , best_individual[1])
     print_data_output(best_individual[0])
            
