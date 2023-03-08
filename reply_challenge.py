@@ -231,7 +231,7 @@ def evolution(population):
     print("TOT GENERATIONS: ", generation, "/", NUM_GENERATIONS)
     print("TOT EXTINCTIONS: " , check_extinctions , "/" , MAX_EXTINCTIONS)
 
-def artificial_evolution():
+def artificial_evolution_1_plus_alpha(): #slowest
     global list_of_lists
     global best_individual
     global ARTIFICIAL_MUTATIONS
@@ -257,6 +257,33 @@ def artificial_evolution():
             found=False 
     print("ARTIFICIAL GENERATIONS: ", gen, "+", gen_a)
 
+def artificial_evolution_1_plus_1(): #fastest
+    global list_of_lists
+    global best_individual
+    global ARTIFICIAL_MUTATIONS
+    artificial_population=[]
+    artificial_population.append(best_individual)
+    gen=0
+    gen_a=0
+    found=False 
+    print("BEGIN ARTIFICIAL EVOLUTION")
+    for ind in artificial_population:
+        gen+=1
+        print("artificial generation: ",gen)
+        for a in range(ARTIFICIAL_MUTATIONS):
+            o=mutation(ind.genome)
+            f = compute_fitness(o)
+            frankenstein=Individual(o,f)
+            if best_individual[1] < frankenstein[1]:
+                best_individual=Individual(frankenstein[0], frankenstein[1])
+                artificial_population.append(best_individual) 
+                gen_a=a+1
+                complete_output()
+                print("FINAL SCORE: " , best_individual[1])
+                print_data_output(best_individual[0])
+                break
+    print("ARTIFICIAL GENERATIONS: ", gen, "+", gen_a)
+
 def complete_output():
     global list_of_lists
     global best_individual
@@ -278,7 +305,7 @@ if __name__ == '__main__':
     evolution(population)
     print("EVOLUTION SCORE: " , best_individual[1])
     population=None
-    artificial_evolution()
+    artificial_evolution_1_plus_1()
     #print(best_individual[0])
     complete_output()
     print("FINAL SCORE: " , best_individual[1])
