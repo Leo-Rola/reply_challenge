@@ -7,10 +7,10 @@ import pandas as pd
 N = 100
 POPULATION_SIZE = N         
 OFFSPRING_SIZE = N*2        
-NUM_GENERATIONS = 2#N*10
+NUM_GENERATIONS = N*10
 ARTIFICIAL_MUTATIONS= 35000 
 MAX_STEADY=10
-MAX_EXTINCTIONS=1#10   
+MAX_EXTINCTIONS=10   
 Individual = namedtuple("Individual", ["genome", "fitness"])
 TOURNAMENT_SIZE =int(N/4)
 GENETIC_OPERATOR_RANDOMNESS = 0.3
@@ -180,6 +180,7 @@ def evolution(population):
     print("BEGIN EVOLUTION")
     while(check_extinctions<=MAX_EXTINCTIONS and generation<NUM_GENERATIONS):
         generation+=1
+        print("generation: ",generation)
         offspring = list()
         for i in range(OFFSPRING_SIZE):
             if random.random() < GENETIC_OPERATOR_RANDOMNESS:                         
@@ -240,7 +241,7 @@ def artificial_evolution():
     print("BEGIN ARTIFICIAL EVOLUTION")
     for ind in artificial_population:
         gen+=1
-        print(gen)
+        print("artificial generation: ",gen)
         for a in range(ARTIFICIAL_MUTATIONS):
             o=mutation(ind.genome)
             f = compute_fitness(o)
@@ -274,7 +275,7 @@ if __name__ == '__main__':
     population=init_population()
     evolution(population)
     print("EVOLUTION SCORE: " , best_individual[1])
-    #artificial_evolution()
+    artificial_evolution()
     #print(best_individual[0])
     complete_output()
     print("FINAL SCORE: " , best_individual[1])
