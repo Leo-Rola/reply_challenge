@@ -275,6 +275,7 @@ if __name__ == '__main__':
     population=init_population()
     evolution(population)
     print("EVOLUTION SCORE: " , best_individual[1])
+    population=None
     artificial_evolution()
     #print(best_individual[0])
     complete_output()
