@@ -120,19 +120,21 @@ def mutation(genome):
     global N_TURNS
     global N_DEMONS 
     new_genome = deepcopy(genome)
-    """n_mutations=N_DEMONS//15
-    if n_mutations==0:
-        n_mutations=1
-    for i in range( n_mutations):"""
-    pos_1 = random.randint(0,N_TURNS-1)
-    val_2= random.randint(0,N_DEMONS-1)
-    try:
-        pos_2=new_genome.index(val_2)
-        val_1 = new_genome[pos_1]
-        new_genome[pos_1] = val_2
-        new_genome[pos_2] = val_1
-    except ValueError:
-        new_genome[pos_1] = val_2
+    max_mutations=N_DEMONS//100
+    if max_mutations==0:
+        max_mutations=1
+    n_mutations=random.randint(1,max_mutations)
+    
+    for i in range( n_mutations):
+        pos_1 = random.randint(0,N_TURNS-1)
+        val_2= random.randint(0,N_DEMONS-1)
+        try:
+            pos_2=new_genome.index(val_2)
+            val_1 = new_genome[pos_1]
+            new_genome[pos_1] = val_2
+            new_genome[pos_2] = val_1
+        except ValueError:
+            new_genome[pos_1] = val_2
 
     return new_genome
 
