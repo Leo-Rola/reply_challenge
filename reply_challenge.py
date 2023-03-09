@@ -55,18 +55,19 @@ def take_data(nome_file):
 
 def print_data_output(result):
     s= pd.Series(result)
-    s.to_csv("output",index=False, header=False)
+    s.to_csv("output.txt",index=False, header=False)
     
 #LEO
 def demon_evaluation(demon):
     reward=0
+    reward_weight=0.8
     for i in range(demon[3]):
         if i==0:
             reward=reward+demon[4+i]
         else:
             reward=reward+demon[4+i]#reward+pow(0.95,i)*demon[4+i]
     stamina=demon[2]-demon[0]#pow(0.90,demon[1])*demon[2]-demon[0]
-    return reward#+0.1*stamina
+    return reward_weight*reward+(1-reward_weight)*stamina
 
 def preprocess_data():
     global list_of_lists
