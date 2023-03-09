@@ -22,10 +22,12 @@ INITIAL_STAMINA=None
 MAX_STAMINA=None
 N_TURNS=None
 N_DEMONS=None
+LEN_GENOME=None
 RIGHE_FILE=None
 #DATA
 best_individual=(None, sys.float_info.min)
 list_of_lists=[]
+best_demons=[]
 
 #FABIO
 def take_data(nome_file):
@@ -34,12 +36,17 @@ def take_data(nome_file):
     global MAX_STAMINA
     global N_TURNS
     global N_DEMONS
+    global LEN_GENOME
     f = open(nome_file, "r")
     intestazione = f.readline().split()
     INITIAL_STAMINA= int(intestazione[0])
     MAX_STAMINA= int(intestazione[1])
     N_TURNS= int(intestazione[2])
     N_DEMONS = int(intestazione[3])
+    if N_TURNS<N_DEMONS:
+        LEN_GENOME=N_TURNS
+    else:
+        LEN_GENOME=N_DEMONS
     for line in f:
         line=line.split()
         line=[int(i) for i in line]
@@ -51,6 +58,38 @@ def print_data_output(result):
     s.to_csv("output",index=False, header=False)
     
 #LEO
+def demon_evaluation(demon):
+    reward=0
+    for i in range(demon[3]):
+        if i==0:
+            reward=reward+demon[4+i]
+        else:
+            reward=reward+pow(0.95,i)*demon[4+i]
+    stamina=pow(0.90,demon[1])*demon[2]-demon[0]
+    return reward+0.1*stamina
+
+def preprocess_data():
+    global list_of_lists
+    global best_demons
+    global N_DEMONS
+    global N_TURNS
+    global LEN_GENOME
+    if N_TURNS<N_DEMONS:
+        demons_rewards=[]
+        for i in range(N_DEMONS):
+            demons_rewards.append(demon_evaluation(list_of_lists[i]))
+        mean=sum(demons_rewards)/len(demons_rewards)
+        best_demons=[x[0] for x in enumerate(demons_rewards) if x[1]>mean]
+        print("mean= ", mean)
+        print("len best_demons= ", len(best_demons))
+        if len(best_demons)<LEN_GENOME:
+            set_tot_val = {i for i in range(N_DEMONS)}
+            cut=LEN_GENOME-len(best_demons)
+            other_demons=set_tot_val-set(best_demons)
+            other_demons=other_demons[:cut]
+            best_demons=best_demons+other_demons
+
+
 
 def compute_fitness(genome):
     global list_of_lists
@@ -99,14 +138,26 @@ def init_population():
     global MAX_STAMINA
     global N_TURNS
     global N_DEMONS
+    global LEN_GENOME
     global POPULATION_SIZE
+    global best_demons
     population = []
     for _ in range(POPULATION_SIZE):
         genome = []
-        for i in range(N_DEMONS):
-            genome.append(i)
-        random.shuffle(genome)
-        genome=genome[:N_TURNS]
+        if len(best_demons)==0:
+            for i in range(N_DEMONS):
+                genome.append(i)
+            random.shuffle(genome)
+            genome=genome[:LEN_GENOME]
+        else:
+            genome=random.choices(best_demons,k=LEN_GENOME)
+            genome=list(OrderedDict.fromkeys(genome))
+            residual= list(set(best_demons)-set(genome))
+            cut=LEN_GENOME-len(genome)
+            random.shuffle(residual)
+            residual=residual[:cut]
+            genome=genome+residual
+
         population.append(Individual(genome, compute_fitness(genome)))
         
 
@@ -118,16 +169,21 @@ def mutation(genome):
     global INITIAL_STAMINA
     global MAX_STAMINA
     global N_TURNS
+    global LEN_GENOME
     global N_DEMONS 
+    global best_demons
     new_genome = deepcopy(genome)
-    max_mutations=N_DEMONS//100
+    max_mutations=N_DEMONS//1000
     if max_mutations==0:
         max_mutations=1
     n_mutations=random.randint(1,max_mutations)
     
     for i in range( n_mutations):
-        pos_1 = random.randint(0,N_TURNS-1)
-        val_2= random.randint(0,N_DEMONS-1)
+        pos_1 = random.randint(0,LEN_GENOME-1)
+        if len(best_demons)==0:
+            val_2= random.randint(0,N_DEMONS-1)
+        else:
+            val_2=random.choice(best_demons)
         try:
             pos_2=new_genome.index(val_2)
             val_1 = new_genome[pos_1]
@@ -144,18 +200,24 @@ def cross_over(genome_1, genome_2):
     global MAX_STAMINA
     global N_TURNS
     global N_DEMONS
+    global LEN_GENOME
     global CROSSOVER_THRESHOLD
+    global best_demons
     new_genome = []
-    set_tot_val = {i for i in range(N_DEMONS)}
-    for i in range(0, N_TURNS):
+    for i in range(0, LEN_GENOME):
         if (random.random() > CROSSOVER_THRESHOLD):
             new_genome.append(genome_1[i])
         else:
             new_genome.append(genome_2[i])
 
     new_genome_plus=list(OrderedDict.fromkeys(new_genome))
-    residual = list(set_tot_val - set(new_genome_plus))
-    cut=N_TURNS-len(new_genome_plus)
+    if len(best_demons)==0:
+        set_tot_val = {i for i in range(N_DEMONS)}
+        residual = list(set_tot_val - set(new_genome_plus))
+    else:
+        residual= list(set(best_demons)-set(new_genome_plus))
+    cut=LEN_GENOME-len(new_genome_plus)
+    random.shuffle(residual)
     residual=residual[:cut]
     new_genome_plus=new_genome_plus+residual
 
@@ -301,6 +363,7 @@ def complete_output():
 if __name__ == '__main__':
     take_data("05-androids-armageddon.txt")#01-the-cloud-abyss.txt
     #print(list_of_lists)
+    #preprocess_data()
     population=init_population()
     evolution(population)
     print("EVOLUTION SCORE: " , best_individual[1])
