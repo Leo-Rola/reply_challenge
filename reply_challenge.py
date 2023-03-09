@@ -64,9 +64,9 @@ def demon_evaluation(demon):
         if i==0:
             reward=reward+demon[4+i]
         else:
-            reward=reward+pow(0.95,i)*demon[4+i]
-    stamina=pow(0.90,demon[1])*demon[2]-demon[0]
-    return reward+0.1*stamina
+            reward=reward+demon[4+i]#reward+pow(0.95,i)*demon[4+i]
+    stamina=demon[2]-demon[0]#pow(0.90,demon[1])*demon[2]-demon[0]
+    return reward#+0.1*stamina
 
 def preprocess_data():
     global list_of_lists
@@ -363,7 +363,7 @@ def complete_output():
 if __name__ == '__main__':
     take_data("05-androids-armageddon.txt")#01-the-cloud-abyss.txt
     #print(list_of_lists)
-    #preprocess_data()
+    preprocess_data()
     population=init_population()
     evolution(population)
     print("EVOLUTION SCORE: " , best_individual[1])
