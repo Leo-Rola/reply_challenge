@@ -4,6 +4,7 @@ import sys
 from collections import namedtuple, OrderedDict
 import pandas as pd
 
+
 N = 100
 POPULATION_SIZE = N         
 OFFSPRING_SIZE = N*2        
@@ -374,11 +375,3 @@ if __name__ == '__main__':
     complete_output()
     print("FINAL SCORE: " , best_individual[1])
     print_data_output(best_individual[0])
-           
-
-
-
-    
-    
-
-    
